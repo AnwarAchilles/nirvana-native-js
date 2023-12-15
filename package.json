@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "Lightweight & simple javascript framework",
   "main": "nirvana.js",
-  "scripts": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/AnwarAchilles/nirvanajs.git"
@@ -11,7 +13,7 @@
   "keywords": [
     "nirvana"
   ],
-  "author": "Anwar Achilles",
+  "author": "Anwar Achilles <hudorianwar07@gmail.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/AnwarAchilles/nirvanajs/issues"
