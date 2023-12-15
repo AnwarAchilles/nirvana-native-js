@@ -1,0 +1,92 @@
+/**
+ * The core class for Nirvana.
+ *
+ * @class NirvanaCore
+ */
+export default class NirvanaCore {
+  /**
+   * The version of Nirvana.
+   *
+   * @static
+   * @type {number}
+   * @memberof NirvanaCore
+   */
+  static _version = 3.7;
+
+  /**
+   * The configuration settings for the todo list environment.
+   *
+   * @static
+   * @type {Map<string, string>}
+   * @memberof NirvanaCore
+   */
+  static _configure = new Map([
+    ["constant", "NV"],
+    ["separator", "."],
+  ]);
+
+  /**
+   * The manifest for the todo list data.
+   *
+   * @static
+   * @type {Map<string, string>}
+   * @memberof NirvanaCore
+   */
+  static _manifest = new Map();
+
+  /**
+   * The components for the todo list.
+   *
+   * @static
+   * @type {Map<any, any>}
+   * @memberof NirvanaCore
+   */
+  static _component = new Map();
+
+  /**
+   * The providers for the todo list.
+   *
+   * @static
+   * @type {Map<any, any>}
+   * @memberof NirvanaCore
+   */
+  static _provider = new Map();
+
+  /**
+   * The services for the todo list.
+   *
+   * @static
+   * @type {Map<any, any>}
+   * @memberof NirvanaCore
+   */
+  static _service = new Map(Object.entries({
+    select: ( selector )=> {
+      return document.querySelectorAll(selector);
+    },
+    protect: ( outputFunction, dataPassing )=> {
+      try {
+        return outputFunction();
+      }catch(e) {
+        this.protect( outputFunction, dataPassing);
+      }
+    },
+    lowercase: (stringText)=> {
+      return stringText.toLowerCase();
+    },
+    uppercase: (stringText)=>  {
+      return stringText.toUpperCase();
+    },
+    capitalize: (stringText)=> {
+      return stringText.charAt(0).toUpperCase() + stringText.slice(1);
+    }
+  }));
+
+  /**
+   * The stores for the todo list.
+   *
+   * @static
+   * @type {Map<any, any>}
+   * @memberof NirvanaCore
+   */
+  static _store = new Map();
+}
