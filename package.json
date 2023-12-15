@@ -1,0 +1,20 @@
+{
+  "name": "nirvana",
+  "version": "1.0.0",
+  "description": "Lightweight & simple javascript framework",
+  "main": "nirvana.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AnwarAchilles/nirvanajs.git"
+  },
+  "keywords": [
+    "nirvana"
+  ],
+  "author": "Anwar Achilles",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/AnwarAchilles/nirvanajs/issues"
+  },
+  "homepage": "https://github.com/AnwarAchilles/nirvanajs#readme"
+}
