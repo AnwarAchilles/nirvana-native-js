@@ -1,5 +1,5 @@
 {
-  "name": "nirvana",
+  "name": "nirvana-native-js",
   "version": "1.0.0",
   "description": "Lightweight & simple javascript framework",
   "main": "nirvana.js",
@@ -8,15 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AnwarAchilles/nirvanajs.git"
+    "url": "git+https://github.com/AnwarAchilles/nirvana-native-js.git"
   },
   "keywords": [
-    "nirvana"
+    "nirvana", "nirvanajs"
   ],
   "author": "Anwar Achilles <hudorianwar07@gmail.com>",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/AnwarAchilles/nirvanajs/issues"
-  },
-  "homepage": "https://github.com/AnwarAchilles/nirvanajs#readme"
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  }
 }
