@@ -3,6 +3,4 @@ Lightweight device to build simple JS-based Apps in JavaScript programming langu
 
 version - Beta
 
-
-
-[![portfolio](https://ik.imagekit.io/anwarachilles/devneet-powered.svg?updatedAt=1704389411574)]('#')
+[![portfolio](https://ik.imagekit.io/anwarachilles/devneet-powered.svg?updatedAt=1704715329026)]('#')
