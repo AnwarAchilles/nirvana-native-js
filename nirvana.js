@@ -13,7 +13,7 @@ class NirvanaCore {
    * @type {number}
    * @memberof NirvanaCore
    */
-  static _version = 3.7;
+  static _version = 3.8;
 
   /**
    * The configuration settings for the todo list environment.
@@ -23,8 +23,9 @@ class NirvanaCore {
    * @memberof NirvanaCore
    */
   static _configure = new Map([
-    ["constant", "NV"],
+    ["constant", "Nirvana"],
     ["separator", "."],
+    ["issueTracking", false]
   ]);
 
   /**
@@ -65,12 +66,33 @@ class NirvanaCore {
     select: ( selector )=> {
       return document.querySelectorAll(selector);
     },
-    protect: ( outputFunction, dataPassing )=> {
+    protect: ( outputFunction ) => {
       try {
-        return outputFunction();
+        outputFunction();
       }catch(e) {
-        this.protect( outputFunction, dataPassing);
+        console.error(e);
       }
+    },
+    listen: (condition) => {
+      let timeoutId;
+      const checkCondition = () => {
+        if (!condition()) {
+          // If condition is not met, wait and check again
+          timeoutId = setTimeout(checkCondition, 10);
+        } else {
+          // If condition is met, resolve promise
+          clearTimeout(timeoutId);
+        }
+      };
+      // Start listening
+      checkCondition();
+      // Return a promise
+      return new Promise((resolve) => {
+        resolve();
+      });
+    },
+    inuqueID: (prefix = "") => {
+      return `${prefix}${Date.now()}${Math.floor(Math.random() * 100000)}`;
     },
     lowercase: (stringText)=> {
       return stringText.toLowerCase();
@@ -90,7 +112,19 @@ class NirvanaCore {
    * @type {Map<any, any>}
    * @memberof NirvanaCore
    */
+
   static _store = new Map();
+
+
+  /**
+   * Array to store issues.
+   *
+   * @static
+   * @type {Array}
+   * @memberof NirvanaCore
+   */
+  static _issue = new Map();
+
 }
 
 /**
@@ -106,11 +140,15 @@ class Nirvana {
    * @param {Object} environment - An object containing key-value pairs to reconfigure the environment
    */
   static environment(environment) {
+    window["NirvanaListen"] = new Map();
+    // Configure configure if present in the environment object
+    if (environment.configure) {
+      NirvanaCore._configure = new Map([...NirvanaCore._configure, ...Object.entries(environment.configure)]);
+    }
     // Configure provider if present in the environment object
     if (environment.provider) {
       NirvanaCore._provider = new Map([...NirvanaCore._provider, ...Object.entries(environment.provider)]);
     }
-    
     // Configure service if present in the environment object
     if (environment.service) {
       NirvanaCore._service = new Map([...NirvanaCore._service, ...Object.entries(environment.service)]);
@@ -133,9 +171,36 @@ class Nirvana {
     
     // Set the Core object as a property of the global window object
     window[NirvanaCore._configure.get("constant")] = this;
+
+    if (environment.showMonitor) {
+      // Set up monitoring if enabled
+      this.showMonitor = environment.showMonitor;
     
-    // Log a message indicating the version of the application
-    console.log("Nirvana " + NirvanaCore._version + " running ..");
+      // Create a div element for the monitoring display
+      let elementMonitor = document.createElement("div");
+      elementMonitor.style.position = "fixed";
+      elementMonitor.style.bottom = 0;
+      elementMonitor.style.padding = "2px 5px";
+      elementMonitor.style.maxHeight = "20%";
+      elementMonitor.style.width = "100%";
+      elementMonitor.style.overflow = "auto";
+      elementMonitor.style.fontSize = "12px";
+      document.body.append(elementMonitor);
+      
+      // Create an unordered list for displaying issues
+      let elementIssue = document.createElement("ul");
+      elementIssue.setAttribute("nv-monitor", "issue");
+      elementIssue.innerHTML = "";
+      elementIssue.style.display = "flex";
+      elementIssue.style.flexDirection = "column-reverse";
+      elementIssue.style.bottom = 0;
+      elementIssue.style.padding = 0;
+      elementIssue.style.listStyleType = "none";
+      elementIssue.style.margin = 0;
+      elementMonitor.append(elementIssue);
+    }
+    // Start listening for issues
+    this.monitoring();
   }
 
 
@@ -304,17 +369,15 @@ class Nirvana {
    *
    * @param {string} prefix - The prefix to match elements.
    * @param {string} [name=''] - The name to match elements (optional, default is an empty string).
+   * @param {document} parent - The parent elements for start selector.
    * @returns {Array} - An array of elements that match the given prefix and name.
    */
-  static element(prefix, name = '') {
+  static element(prefix, name = '', parent = document.querySelector("body")) {
     // Use the selector method to generate a selector string
     const selector = this.selector(prefix, name);
     
     // Use document.querySelectorAll to find all elements that match the selector
-    const elements = document.querySelectorAll(selector);
-    
-    // Return the array of elements
-    return Array.from(elements);
+    return parent.querySelectorAll(selector);
   }
 
 
@@ -337,6 +400,47 @@ class Nirvana {
     const selector = name ? `[${constant}${prefixer}='${name}']` : `[${constant}${prefixer}]`;
 
     return selector;
+  }
+
+
+  /**
+   * Adds an issue to the Core issue list or returns the entire issue list.
+   *
+   * @param {int} name - The name of the issue.
+   * @param {string} name - The name of the issue.
+   * @param {string} message - The message of the issue.
+   * @return {Array} - The entire issue list if no name is provided.
+   */
+  static issue(name='', message='') {
+    if (name) {
+      NirvanaCore._issue.set(name, message);
+    }else {
+      return NirvanaCore._issue;
+    }
+    this.monitoring();
+  }
+  static monitoring() {
+    console.clear();
+    if (this.showMonitor) {
+      this.element("monitor", "issue").item(0).innerHTML = `<li>🚀 Nirvana ${NirvanaCore._version} running ..</li>`;
+      NirvanaCore._issue.forEach((message, name) => {
+        let boxIssue = document.createElement("li");
+        name = name.split(":");
+        // ⌬ ⋯ 【】
+        boxIssue.innerHTML = `${name[0]} ⌬ ${name[1]} 𝄖 ${message}`;
+        boxIssue.style.borderTop = "1px solid rgba(0,0,0,0.1)";
+        this.element("monitor", "issue").item(0).append(boxIssue);
+      });
+      if (this.element("monitor", "issue").item(0).querySelector("li:nth-child("+(NirvanaCore._issue.size+1)+")")) {
+        this.element("monitor", "issue").item(0).querySelector("li:nth-child("+(NirvanaCore._issue.size+1)+")").style.backgroundColor = "rgba(100,100,100,0.1)";
+      }
+    }else {
+      console.debug(`🚀 Nirvana ${NirvanaCore._version} running ..`);
+      NirvanaCore._issue.forEach((message, name) => {
+        name = name.split(":");
+        console.debug(`${name[0]} ⌬ ${name[1]} 𝄖 ${message}`);
+      });
+    }
   }
 
   
@@ -363,8 +467,21 @@ class Nirvana {
       this.constructor.state = true;
       this.element = this.element.querySelector(this.constructor.selector);
     }else {
-      console.log("Nirvana-Component: "+this.constructor.name+" Not Have Element");
+      Nirvana.issue("Component:"+this.constructor.name, `Element Not Found
+        add attribute "${this.constructor.selector}" to element
+      `);
     }
+  }
+
+  /**
+   * Selects elements from the DOM based on the given selector.
+   *
+   * @param {string} selector - The CSS selector used to select elements.
+   * @return {NodeList} - A list of elements that match the selector.
+   */
+  select( selector ) {
+    // Use the querySelectorAll method to select elements from the DOM based on the given selector
+    return this.element.querySelectorAll(selector);
   }
 
 }
