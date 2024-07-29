@@ -24,10 +24,9 @@ Create an index.html project, create a basic html structure, like the example be
   <title>Document</title>
 </head>
 <body>
-  <div nirvana-component="Main">
-    <h1>Should Be Change</h1>
-    <h1>Should Be Change</h1>
-    <button onclick="Nirvana.run('Main').index()">Run Index</button>
+  <div nirvana-component="Demo">
+    <h1 id="result">0</h1>
+    <button onclick="Nirvana.run('Demo').click()">Click Me</button>
   </div>
   
   <script src="./node_modules/nirvana-native-js/nirvana.js"></script>
@@ -39,20 +38,28 @@ Create an index.html project, create a basic html structure, like the example be
 After that, create the index.js file and then setup the nirvana environment & components
 ```js
 Nirvana.environment({
-  Configure: {},
-  Provider: {},
-  Service: {}
+  configure: {},
+  provider: {},
+  service: {}
 });
 
 
 Nirvana.component(
-  class Main extends Nirvana {
-    index() {
-      this.select("h1").item(0).innerHTML = "nirvana ready 1";
-      this.select("h1").item(1).innerHTML = "nirvana ready 2";
+  class Demo extends Nirvana {
+    store = Nirvana.store("Demo");
+    start() {
+      this.store.set("result", 0);
+    }
+    click() {
+      this.store.set("result", 
+        this.store.get("result") + 1
+      );
+      this.select("#result").item(0).innerHTML = this.store.get("result");
     }
   }
 );
+
+Nirvana.run("Demo").start();
 ```
 
 
