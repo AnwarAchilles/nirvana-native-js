@@ -4,15 +4,15 @@
   "description": "Lightweight & simple javascript framework",
   "main": "nirvana.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "npx rollup -c -w"
+    "build": "npx rollup -c"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/AnwarAchilles/nirvana-native-js.git"
   },
   "keywords": [
-    "nirvana", "nirvanajs"
+    "nirvana",
+    "nirvanajs"
   ],
   "author": "Anwar Achilles <hudorianwar07@gmail.com>",
   "license": "MIT",
@@ -21,6 +21,8 @@
   },
   "type": "module",
   "devDependencies": {
-    "rollup": "^3.28.0"
+    "@rollup/plugin-terser": "^0.4.4",
+    "rollup": "^3.28.0",
+    "rollup-plugin-postcss": "^4.0.2"
   }
 }

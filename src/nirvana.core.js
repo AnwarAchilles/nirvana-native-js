@@ -3,7 +3,7 @@
  *
  * @class NirvanaCore
  */
-class NirvanaCore {
+export default class NirvanaCore {
   /**
    * The version of Nirvana.
    *
@@ -11,7 +11,7 @@ class NirvanaCore {
    * @type {number}
    * @memberof NirvanaCore
    */
-  static _version = 3.8;
+  static _version = 3.9;
 
   /**
    * The configuration settings for the todo list environment.

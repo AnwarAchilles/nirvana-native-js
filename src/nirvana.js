@@ -17,26 +17,26 @@ class Nirvana {
     
     // Configure if present in the environment object
     if (environment.configure) {
-      NirvanaCore._configure = new Map([...NirvanaCore._configure, ...Object.entries(environment.configure)]);
+      Core._configure = new Map([...Core._configure, ...Object.entries(environment.configure)]);
     }
 
     // Configure provider if present in the environment object
     if (environment.provider) {
-      NirvanaCore._provider = new Map([...NirvanaCore._provider, ...Object.entries(environment.provider)]);
+      Core._provider = new Map([...Core._provider, ...Object.entries(environment.provider)]);
     }
 
     // Configure service if present in the environment object
     if (environment.service) {
-      NirvanaCore._service = new Map([...NirvanaCore._service, ...Object.entries(environment.service)]);
+      Core._service = new Map([...Core._service, ...Object.entries(environment.service)]);
     }
 
     // Set each provider as a property of the Core class
-    NirvanaCore._provider.forEach((provider, name) => {
+    Core._provider.forEach((provider, name) => {
       this[name] = provider;
     });
 
     // Load Service
-    NirvanaCore._service.forEach((Service, name) => {
+    Core._service.forEach((Service, name) => {
       if (typeof window[name] === "function") {
         console.log("Nirvana-Service: " + name + "() Already Exists");
       } else {
@@ -45,7 +45,7 @@ class Nirvana {
     });
 
     // Set the Core object as a property of the global window object
-    window[NirvanaCore._configure.get("constant")] = this;
+    window[Core._configure.get("constant")] = this;
 
     // Set up monitoring if enabled
     if (environment.showMonitor) {
@@ -98,7 +98,7 @@ class Nirvana {
 
     // Check if a nested component is provided
     if (component) {
-      nameComponent = `${nameOrComponent}${NirvanaCore._configure.get("separator")}${component.name}`;
+      nameComponent = `${nameOrComponent}${Core._configure.get("separator")}${component.name}`;
       classComponent = component;
     } else {
       // If no nested component is provided, use the name of the component object
@@ -113,7 +113,7 @@ class Nirvana {
     }
 
     // Set the component in the Core.Nest registry
-    NirvanaCore._component.set(nameComponent, classComponent);
+    Core._component.set(nameComponent, classComponent);
     return this;
   }
 
@@ -126,7 +126,7 @@ class Nirvana {
    */
   static provider(name, provider) {
     // Set the provider in the Core provider map
-    NirvanaCore._provider.set(name, provider);
+    Core._provider.set(name, provider);
 
     // Set the provider as a property of the current class instance
     this[name] = provider;
@@ -155,22 +155,22 @@ class Nirvana {
    * @return {Map} The stored data.
    */
   static store(name, data) {
-    if (NirvanaCore._store.has(name)) { // check if the data already exists
+    if (Core._store.has(name)) { // check if the data already exists
       if (data) { // check if new data is provided
-        const lastData = NirvanaCore._store.get(name); // retrieve the existing data
+        const lastData = Core._store.get(name); // retrieve the existing data
         const newData = new Map(Object.entries(data)); // create a new map from the provided data
-        NirvanaCore._store.set(name, new Map([...lastData, ...newData])); // merge the existing data with the new data and update the map
-        return NirvanaCore._store.get(name); // return the updated data
+        Core._store.set(name, new Map([...lastData, ...newData])); // merge the existing data with the new data and update the map
+        return Core._store.get(name); // return the updated data
       } else {
-        return NirvanaCore._store.get(name); // if no new data is provided, return the existing data
+        return Core._store.get(name); // if no new data is provided, return the existing data
       }
     } else {
       if (data) { // check if new data is provided
-        NirvanaCore._store.set(name, new Map(Object.entries(data))); // create a new map from the provided data and store it
-        return NirvanaCore._store.get(name); // return the stored data
+        Core._store.set(name, new Map(Object.entries(data))); // create a new map from the provided data and store it
+        return Core._store.get(name); // return the stored data
       } else {
-        NirvanaCore._store.set(name, new Map()); // if no new data is provided, store an empty map
-        return NirvanaCore._store.get(name); // return the stored data
+        Core._store.set(name, new Map()); // if no new data is provided, store an empty map
+        return Core._store.get(name); // return the stored data
       }
     }
   }
@@ -182,8 +182,8 @@ class Nirvana {
    * @returns {object|undefined} - The loaded component or undefined if not found.
    */
   static load(name) {
-    if (NirvanaCore._component.has(name)) {
-      const component = NirvanaCore._component.get(name);
+    if (Core._component.has(name)) {
+      const component = Core._component.get(name);
 
       /**
        * Create a new instance of the loaded component.
@@ -207,7 +207,7 @@ class Nirvana {
    * @returns {object} - The resulting component instance.
    */
   static run(name, parameter) {
-    const component = NirvanaCore._component.get(name);
+    const component = Core._component.get(name);
     const instanceComponent = new component({ ...parameter });
 
     // Check if the component has a 'state' property in its constructor
@@ -255,7 +255,7 @@ class Nirvana {
    */
   static selector(prefix, name = '') {
     // Get the lowercase constant value from the configuration
-    const constant = NirvanaCore._configure.get("constant").toLowerCase();
+    const constant = Core._configure.get("constant").toLowerCase();
 
     // Add the prefix to the selector if it is provided
     const prefixer = prefix ? `-${prefix}` : '';
@@ -275,9 +275,9 @@ class Nirvana {
    */
   static issue(name = '', message = '') {
     if (name) {
-      NirvanaCore._issue.set(name, message);
+      Core._issue.set(name, message);
     } else {
-      return NirvanaCore._issue;
+      return Core._issue;
     }
     this.monitoring();
   }
@@ -288,20 +288,20 @@ class Nirvana {
   static monitoring() {
     console.clear();
     if (this.showMonitor) {
-      this.element("monitor", "issue").item(0).innerHTML = `<li>🚀 Nirvana ${NirvanaCore._version} running ..</li>`;
-      NirvanaCore._issue.forEach((message, name) => {
+      this.element("monitor", "issue").item(0).innerHTML = `<li>🚀 Nirvana ${Core._version} running ..</li>`;
+      Core._issue.forEach((message, name) => {
         let boxIssue = document.createElement("li");
         name = name.split(":");
         boxIssue.innerHTML = `${name[0]} ⌬ ${name[1]} 𝄖 ${message}`;
         boxIssue.style.borderTop = "1px solid rgba(0,0,0,0.1)";
         this.element("monitor", "issue").item(0).append(boxIssue);
       });
-      if (this.element("monitor", "issue").item(0).querySelector("li:nth-child(" + (NirvanaCore._issue.size + 1) + ")")) {
-        this.element("monitor", "issue").item(0).querySelector("li:nth-child(" + (NirvanaCore._issue.size + 1) + ")").style.backgroundColor = "rgba(100,100,100,0.1)";
+      if (this.element("monitor", "issue").item(0).querySelector("li:nth-child(" + (Core._issue.size + 1) + ")")) {
+        this.element("monitor", "issue").item(0).querySelector("li:nth-child(" + (Core._issue.size + 1) + ")").style.backgroundColor = "rgba(100,100,100,0.1)";
       }
     } else {
-      console.debug(`🚀 Nirvana ${NirvanaCore._version} running ..`);
-      NirvanaCore._issue.forEach((message, name) => {
+      console.debug(`🚀 Nirvana ${Core._version} running ..`);
+      Core._issue.forEach((message, name) => {
         name = name.split(":");
         console.debug(`${name[0]} ⌬ ${name[1]} 𝄖 ${message}`);
       });

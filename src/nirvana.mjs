@@ -1,6 +1,5 @@
 import Core from "./nirvana.core";
 
-
 /**
  * The `Nirvana` class represents the Nirvana JavaScript environment.
  * It provides various methods and features for configuring and managing the environment.
@@ -15,68 +14,76 @@ export default class Nirvana {
    */
   static environment(environment) {
     window["NirvanaListen"] = new Map();
-    // Configure configure if present in the environment object
+    
+    // Configure if present in the environment object
     if (environment.configure) {
-      NirvanaCore._configure = new Map([...NirvanaCore._configure, ...Object.entries(environment.configure)]);
+      Core._configure = new Map([...Core._configure, ...Object.entries(environment.configure)]);
     }
+
     // Configure provider if present in the environment object
     if (environment.provider) {
-      NirvanaCore._provider = new Map([...NirvanaCore._provider, ...Object.entries(environment.provider)]);
+      Core._provider = new Map([...Core._provider, ...Object.entries(environment.provider)]);
     }
+
     // Configure service if present in the environment object
     if (environment.service) {
-      NirvanaCore._service = new Map([...NirvanaCore._service, ...Object.entries(environment.service)]);
+      Core._service = new Map([...Core._service, ...Object.entries(environment.service)]);
     }
-    
+
     // Set each provider as a property of the Core class
-    NirvanaCore._provider.forEach((provider, name) => {
+    Core._provider.forEach((provider, name) => {
       this[name] = provider;
     });
 
-    // load Service
-    NirvanaCore._service.forEach((Service, name) => {
-      // console.log(name);
+    // Load Service
+    Core._service.forEach((Service, name) => {
       if (typeof window[name] === "function") {
         console.log("Nirvana-Service: " + name + "() Already Exists");
-      }else {
+      } else {
         window[name] = Service;
       }
     });
-    
-    // Set the Core object as a property of the global window object
-    window[NirvanaCore._configure.get("constant")] = this;
 
+    // Set the Core object as a property of the global window object
+    window[Core._configure.get("constant")] = this;
+
+    // Set up monitoring if enabled
     if (environment.showMonitor) {
-      // Set up monitoring if enabled
       this.showMonitor = environment.showMonitor;
-    
-      // Create a div element for the monitoring display
-      let elementMonitor = document.createElement("div");
-      elementMonitor.style.position = "fixed";
-      elementMonitor.style.bottom = 0;
-      elementMonitor.style.padding = "2px 5px";
-      elementMonitor.style.maxHeight = "20%";
-      elementMonitor.style.width = "100%";
-      elementMonitor.style.overflow = "auto";
-      elementMonitor.style.fontSize = "12px";
-      document.body.append(elementMonitor);
-      
-      // Create an unordered list for displaying issues
-      let elementIssue = document.createElement("ul");
-      elementIssue.setAttribute("nv-monitor", "issue");
-      elementIssue.innerHTML = "";
-      elementIssue.style.display = "flex";
-      elementIssue.style.flexDirection = "column-reverse";
-      elementIssue.style.bottom = 0;
-      elementIssue.style.padding = 0;
-      elementIssue.style.listStyleType = "none";
-      elementIssue.style.margin = 0;
-      elementMonitor.append(elementIssue);
+      this.setupMonitoring();
     }
+
     // Start listening for issues
     this.monitoring();
   }
 
+  /**
+   * Set up the monitoring display.
+   */
+  static setupMonitoring() {
+    // Create a div element for the monitoring display
+    let elementMonitor = document.createElement("div");
+    elementMonitor.style.position = "fixed";
+    elementMonitor.style.bottom = 0;
+    elementMonitor.style.padding = "2px 5px";
+    elementMonitor.style.maxHeight = "20%";
+    elementMonitor.style.width = "100%";
+    elementMonitor.style.overflow = "auto";
+    elementMonitor.style.fontSize = "12px";
+    document.body.append(elementMonitor);
+
+    // Create an unordered list for displaying issues
+    let elementIssue = document.createElement("ul");
+    elementIssue.setAttribute("nv-monitor", "issue");
+    elementIssue.innerHTML = "";
+    elementIssue.style.display = "flex";
+    elementIssue.style.flexDirection = "column-reverse";
+    elementIssue.style.bottom = 0;
+    elementIssue.style.padding = 0;
+    elementIssue.style.listStyleType = "none";
+    elementIssue.style.margin = 0;
+    elementMonitor.append(elementIssue);
+  }
 
   /**
    * Generates a component and sets it in the Core.Nest registry.
@@ -88,17 +95,17 @@ export default class Nirvana {
   static component(nameOrComponent, component) {
     let nameComponent = "";
     let classComponent = {};
-    
+
     // Check if a nested component is provided
     if (component) {
-      nameComponent = `${nameOrComponent}${NirvanaCore._configure.get("separator")}${component.name}`;
+      nameComponent = `${nameOrComponent}${Core._configure.get("separator")}${component.name}`;
       classComponent = component;
     } else {
       // If no nested component is provided, use the name of the component object
       nameComponent = nameOrComponent.name;
       classComponent = nameOrComponent;
     }
-    
+
     // Check if the component is of type Nirvana and update the component and selector properties
     if (classComponent.__proto__.name === 'Nirvana') {
       classComponent.component = nameComponent;
@@ -106,11 +113,9 @@ export default class Nirvana {
     }
 
     // Set the component in the Core.Nest registry
-    NirvanaCore._component.set(nameComponent, classComponent);
+    Core._component.set(nameComponent, classComponent);
     return this;
   }
-
-    
 
   /**
    * Set a provider for a given name.
@@ -121,7 +126,7 @@ export default class Nirvana {
    */
   static provider(name, provider) {
     // Set the provider in the Core provider map
-    NirvanaCore._provider.set(name, provider);
+    Core._provider.set(name, provider);
 
     // Set the provider as a property of the current class instance
     this[name] = provider;
@@ -130,22 +135,17 @@ export default class Nirvana {
     return this;
   }
 
-
-
   /**
    * Sets a service in the Core service map.
    * (Deprecated)
    */
   static service(service) {
-    // console.log("Nirvana service is deprecated, use pure component");
     if (typeof window[service.name] === "function") {
       console.log("Nirvana-Service: " + service + "() Already Exists");
-    }else {
+    } else {
       window[service.name] = service;
     }
   }
-
-
 
   /**
    * Stores data in the Core._store map.
@@ -155,27 +155,25 @@ export default class Nirvana {
    * @return {Map} The stored data.
    */
   static store(name, data) {
-    if (NirvanaCore._store.has(name)) { // check if the data already exists
+    if (Core._store.has(name)) { // check if the data already exists
       if (data) { // check if new data is provided
-        const lastData = NirvanaCore._store.get(name); // retrieve the existing data
+        const lastData = Core._store.get(name); // retrieve the existing data
         const newData = new Map(Object.entries(data)); // create a new map from the provided data
-        NirvanaCore._store.set(name, new Map([...lastData, ...newData])); // merge the existing data with the new data and update the map
-        return NirvanaCore._store.get(name); // return the updated data
+        Core._store.set(name, new Map([...lastData, ...newData])); // merge the existing data with the new data and update the map
+        return Core._store.get(name); // return the updated data
       } else {
-        return NirvanaCore._store.get(name); // if no new data is provided, return the existing data
+        return Core._store.get(name); // if no new data is provided, return the existing data
       }
     } else {
       if (data) { // check if new data is provided
-        NirvanaCore._store.set(name, new Map(Object.entries(data))); // create a new map from the provided data and store it
-        return NirvanaCore._store.get(name); // return the stored data
+        Core._store.set(name, new Map(Object.entries(data))); // create a new map from the provided data and store it
+        return Core._store.get(name); // return the stored data
       } else {
-        NirvanaCore._store.set(name, new Map()); // if no new data is provided, store an empty map
-        return NirvanaCore._store.get(name); // return the stored data
+        Core._store.set(name, new Map()); // if no new data is provided, store an empty map
+        return Core._store.get(name); // return the stored data
       }
     }
   }
-
-
 
   /**
    * Load a component by name if it exists in the Core's component registry.
@@ -184,8 +182,8 @@ export default class Nirvana {
    * @returns {object|undefined} - The loaded component or undefined if not found.
    */
   static load(name) {
-    if (NirvanaCore._component.has(name)) {
-      const component = NirvanaCore._component.get(name);
+    if (Core._component.has(name)) {
+      const component = Core._component.get(name);
 
       /**
        * Create a new instance of the loaded component.
@@ -201,9 +199,6 @@ export default class Nirvana {
     }
   }
 
-
-
-
   /**
    * Run a component based on certain conditions.
    * 
@@ -212,7 +207,7 @@ export default class Nirvana {
    * @returns {object} - The resulting component instance.
    */
   static run(name, parameter) {
-    const component = NirvanaCore._component.get(name);
+    const component = Core._component.get(name);
     const instanceComponent = new component({ ...parameter });
 
     // Check if the component has a 'state' property in its constructor
@@ -235,9 +230,6 @@ export default class Nirvana {
     return instanceComponent;
   }
 
-
-
-    
   /**
    * Returns an array of elements that match the given prefix and name.
    *
@@ -254,8 +246,6 @@ export default class Nirvana {
     return parent.querySelectorAll(selector);
   }
 
-
-    
   /**
    * Generates a selector based on a prefix and name.
    *
@@ -265,7 +255,7 @@ export default class Nirvana {
    */
   static selector(prefix, name = '') {
     // Get the lowercase constant value from the configuration
-    const constant = NirvanaCore._configure.get("constant").toLowerCase();
+    const constant = Core._configure.get("constant").toLowerCase();
 
     // Add the prefix to the selector if it is provided
     const prefixer = prefix ? `-${prefix}` : '';
@@ -276,51 +266,47 @@ export default class Nirvana {
     return selector;
   }
 
-
   /**
    * Adds an issue to the Core issue list or returns the entire issue list.
    *
-   * @param {int} name - The name of the issue.
    * @param {string} name - The name of the issue.
    * @param {string} message - The message of the issue.
    * @return {Array} - The entire issue list if no name is provided.
    */
-  static issue(name='', message='') {
+  static issue(name = '', message = '') {
     if (name) {
-      NirvanaCore._issue.set(name, message);
-    }else {
-      return NirvanaCore._issue;
+      Core._issue.set(name, message);
+    } else {
+      return Core._issue;
     }
     this.monitoring();
   }
+
+  /**
+   * Monitors issues and displays them.
+   */
   static monitoring() {
     console.clear();
     if (this.showMonitor) {
-      this.element("monitor", "issue").item(0).innerHTML = `<li>🚀 Nirvana ${NirvanaCore._version} running ..</li>`;
-      NirvanaCore._issue.forEach((message, name) => {
+      this.element("monitor", "issue").item(0).innerHTML = `<li>🚀 Nirvana ${Core._version} running ..</li>`;
+      Core._issue.forEach((message, name) => {
         let boxIssue = document.createElement("li");
         name = name.split(":");
-        // ⌬ ⋯ 【】
         boxIssue.innerHTML = `${name[0]} ⌬ ${name[1]} 𝄖 ${message}`;
         boxIssue.style.borderTop = "1px solid rgba(0,0,0,0.1)";
         this.element("monitor", "issue").item(0).append(boxIssue);
       });
-      if (this.element("monitor", "issue").item(0).querySelector("li:nth-child("+(NirvanaCore._issue.size+1)+")")) {
-        this.element("monitor", "issue").item(0).querySelector("li:nth-child("+(NirvanaCore._issue.size+1)+")").style.backgroundColor = "rgba(100,100,100,0.1)";
+      if (this.element("monitor", "issue").item(0).querySelector("li:nth-child(" + (Core._issue.size + 1) + ")")) {
+        this.element("monitor", "issue").item(0).querySelector("li:nth-child(" + (Core._issue.size + 1) + ")").style.backgroundColor = "rgba(100,100,100,0.1)";
       }
-    }else {
-      console.debug(`🚀 Nirvana ${NirvanaCore._version} running ..`);
-      NirvanaCore._issue.forEach((message, name) => {
+    } else {
+      console.debug(`🚀 Nirvana ${Core._version} running ..`);
+      Core._issue.forEach((message, name) => {
         name = name.split(":");
         console.debug(`${name[0]} ⌬ ${name[1]} 𝄖 ${message}`);
       });
     }
   }
-
-  
-
-
-
 
   /**
    * The selected element in the DOM.
@@ -328,20 +314,16 @@ export default class Nirvana {
    * @type {Element}
    */
   element = document.querySelector("body");
-  
+
   /**
    * Constructs a new instance of the class.
    */
   constructor() {
-    /**
-     * Check for the presence of an element matching a specified selector, and if found, update the element
-     * and set the state to true in the component's constructor.
-     */
     if (this.element.querySelector(this.constructor.selector)) {
       this.constructor.state = true;
       this.element = this.element.querySelector(this.constructor.selector);
-    }else {
-      Nirvana.issue("Component:"+this.constructor.name, `Element Not Found
+    } else {
+      Nirvana.issue("Component:" + this.constructor.name, `Element Not Found
         add attribute "${this.constructor.selector}" to element
       `);
     }
@@ -353,8 +335,7 @@ export default class Nirvana {
    * @param {string} selector - The CSS selector used to select elements.
    * @return {NodeList} - A list of elements that match the selector.
    */
-  select( selector ) {
-    // Use the querySelectorAll method to select elements from the DOM based on the given selector
+  select(selector) {
     return this.element.querySelectorAll(selector);
   }
 }
