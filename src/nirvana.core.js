@@ -3,7 +3,7 @@
  *
  * @class NirvanaCore
  */
-export default class NirvanaCore {
+class NirvanaCore {
   /**
    * The version of Nirvana.
    *
@@ -11,7 +11,7 @@ export default class NirvanaCore {
    * @type {number}
    * @memberof NirvanaCore
    */
-  static _version = 3.7;
+  static _version = 3.8;
 
   /**
    * The configuration settings for the todo list environment.
@@ -21,8 +21,9 @@ export default class NirvanaCore {
    * @memberof NirvanaCore
    */
   static _configure = new Map([
-    ["constant", "NV"],
+    ["constant", "Nirvana"],
     ["separator", "."],
+    ["issueTracking", false]
   ]);
 
   /**
@@ -63,12 +64,33 @@ export default class NirvanaCore {
     select: ( selector )=> {
       return document.querySelectorAll(selector);
     },
-    protect: ( outputFunction, dataPassing )=> {
+    protect: ( outputFunction ) => {
       try {
-        return outputFunction();
+        outputFunction();
       }catch(e) {
-        this.protect( outputFunction, dataPassing);
+        console.error(e);
       }
+    },
+    listen: (condition) => {
+      let timeoutId;
+      const checkCondition = () => {
+        if (!condition()) {
+          // If condition is not met, wait and check again
+          timeoutId = setTimeout(checkCondition, 10);
+        } else {
+          // If condition is met, resolve promise
+          clearTimeout(timeoutId);
+        }
+      };
+      // Start listening
+      checkCondition();
+      // Return a promise
+      return new Promise((resolve) => {
+        resolve();
+      });
+    },
+    inuqueID: (prefix = "") => {
+      return `${prefix}${Date.now()}${Math.floor(Math.random() * 100000)}`;
     },
     lowercase: (stringText)=> {
       return stringText.toLowerCase();
@@ -88,5 +110,17 @@ export default class NirvanaCore {
    * @type {Map<any, any>}
    * @memberof NirvanaCore
    */
+
   static _store = new Map();
+
+
+  /**
+   * Array to store issues.
+   *
+   * @static
+   * @type {Array}
+   * @memberof NirvanaCore
+   */
+  static _issue = new Map();
+
 }
