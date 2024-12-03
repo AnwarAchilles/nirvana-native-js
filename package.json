@@ -4,7 +4,8 @@
   "description": "Lightweight & simple javascript framework",
   "main": "nirvana.js",
   "scripts": {
-    "build": "npx rollup -c"
+    "build": "npx rollup -c",
+    "watch": "npx rollup -c -w"
   },
   "repository": {
     "type": "git",

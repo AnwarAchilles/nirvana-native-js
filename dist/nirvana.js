@@ -13,7 +13,9 @@ class NirvanaCore {
    * @type {number}
    * @memberof NirvanaCore
    */
-  static _version = 3.9;
+  static _version = 4.0;
+
+  static _data = {};
 
   /**
    * The configuration settings for the todo list environment.
@@ -23,7 +25,7 @@ class NirvanaCore {
    * @memberof NirvanaCore
    */
   static _configure = new Map([
-    ["constant", "Nirvana"],
+    ["alias", "Nirvana"],
     ["separator", "."],
     ["issueTracking", false]
   ]);
@@ -140,8 +142,11 @@ class Nirvana {
    * @param {Object} environment - An object containing key-value pairs to reconfigure the environment
    */
   static environment(environment) {
-    window["NirvanaListen"] = new Map();
-    
+    // Configure if present in the environment object
+    if (environment.data) {
+      NirvanaCore._data = Object.assign(NirvanaCore._data, environment.data);
+    }
+
     // Configure if present in the environment object
     if (environment.configure) {
       NirvanaCore._configure = new Map([...NirvanaCore._configure, ...Object.entries(environment.configure)]);
@@ -155,6 +160,10 @@ class Nirvana {
     // Configure service if present in the environment object
     if (environment.service) {
       NirvanaCore._service = new Map([...NirvanaCore._service, ...Object.entries(environment.service)]);
+    }
+
+    if (typeof environment.configure.constant !== 'undefined') {
+      NirvanaCore._configure.set("alias", environment.configure.constant);
     }
 
     // Set each provider as a property of the Core class
@@ -172,44 +181,23 @@ class Nirvana {
     });
 
     // Set the Core object as a property of the global window object
-    window[NirvanaCore._configure.get("constant")] = this;
+    window[NirvanaCore._configure.get("alias")] = this;
 
-    // Set up monitoring if enabled
-    if (environment.showMonitor) {
-      this.showMonitor = environment.showMonitor;
-      this.setupMonitoring();
-    }
-
-    // Start listening for issues
-    this.monitoring();
+    console.clear();
+    console.debug(`🚀 Nirvana ${NirvanaCore._version} running ..`);
   }
 
-  /**
-   * Set up the monitoring display.
-   */
-  static setupMonitoring() {
-    // Create a div element for the monitoring display
-    let elementMonitor = document.createElement("div");
-    elementMonitor.style.position = "fixed";
-    elementMonitor.style.bottom = 0;
-    elementMonitor.style.padding = "2px 5px";
-    elementMonitor.style.maxHeight = "20%";
-    elementMonitor.style.width = "100%";
-    elementMonitor.style.overflow = "auto";
-    elementMonitor.style.fontSize = "12px";
-    document.body.append(elementMonitor);
 
-    // Create an unordered list for displaying issues
-    let elementIssue = document.createElement("ul");
-    elementIssue.setAttribute("nv-monitor", "issue");
-    elementIssue.innerHTML = "";
-    elementIssue.style.display = "flex";
-    elementIssue.style.flexDirection = "column-reverse";
-    elementIssue.style.bottom = 0;
-    elementIssue.style.padding = 0;
-    elementIssue.style.listStyleType = "none";
-    elementIssue.style.margin = 0;
-    elementMonitor.append(elementIssue);
+  static data(name, data) {
+    if (!data) {
+      if (!name) {
+        return NirvanaCore._data;
+      }else {
+        return (typeof NirvanaCore._data[name] !== 'undefined') ? NirvanaCore._data[name] : null;
+      }
+    }else {
+      return NirvanaCore._data[name] = data;
+    }
   }
 
   /**
@@ -382,7 +370,7 @@ class Nirvana {
    */
   static selector(prefix, name = '') {
     // Get the lowercase constant value from the configuration
-    const constant = NirvanaCore._configure.get("constant").toLowerCase();
+    const constant = NirvanaCore._configure.get("alias").toLowerCase();
 
     // Add the prefix to the selector if it is provided
     const prefixer = prefix ? `-${prefix}` : '';
@@ -405,33 +393,6 @@ class Nirvana {
       NirvanaCore._issue.set(name, message);
     } else {
       return NirvanaCore._issue;
-    }
-    this.monitoring();
-  }
-
-  /**
-   * Monitors issues and displays them.
-   */
-  static monitoring() {
-    console.clear();
-    if (this.showMonitor) {
-      this.element("monitor", "issue").item(0).innerHTML = `<li>🚀 Nirvana ${NirvanaCore._version} running ..</li>`;
-      NirvanaCore._issue.forEach((message, name) => {
-        let boxIssue = document.createElement("li");
-        name = name.split(":");
-        boxIssue.innerHTML = `${name[0]} ⌬ ${name[1]} 𝄖 ${message}`;
-        boxIssue.style.borderTop = "1px solid rgba(0,0,0,0.1)";
-        this.element("monitor", "issue").item(0).append(boxIssue);
-      });
-      if (this.element("monitor", "issue").item(0).querySelector("li:nth-child(" + (NirvanaCore._issue.size + 1) + ")")) {
-        this.element("monitor", "issue").item(0).querySelector("li:nth-child(" + (NirvanaCore._issue.size + 1) + ")").style.backgroundColor = "rgba(100,100,100,0.1)";
-      }
-    } else {
-      console.debug(`🚀 Nirvana ${NirvanaCore._version} running ..`);
-      NirvanaCore._issue.forEach((message, name) => {
-        name = name.split(":");
-        console.debug(`${name[0]} ⌬ ${name[1]} 𝄖 ${message}`);
-      });
     }
   }
 

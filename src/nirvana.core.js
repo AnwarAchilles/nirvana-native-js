@@ -11,7 +11,9 @@ export default class NirvanaCore {
    * @type {number}
    * @memberof NirvanaCore
    */
-  static _version = 3.9;
+  static _version = 4.0;
+
+  static _data = {};
 
   /**
    * The configuration settings for the todo list environment.
@@ -21,7 +23,7 @@ export default class NirvanaCore {
    * @memberof NirvanaCore
    */
   static _configure = new Map([
-    ["constant", "Nirvana"],
+    ["alias", "Nirvana"],
     ["separator", "."],
     ["issueTracking", false]
   ]);
